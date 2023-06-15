@@ -1,0 +1,10 @@
+# Expose a directory from the ephemeral partition (XFS) for testing purposes
+- op: add
+  path: /machine/kubelet/extraMounts
+  value:
+    - destination: /var/local-storage
+      type: bind
+      source: /var/local-storage
+      options:
+        - bind
+        - rw

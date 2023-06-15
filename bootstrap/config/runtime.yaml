@@ -1,0 +1,24 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: testk8s-runtime
+  namespace: flux-system
+spec:
+  interval: 1m # TODO: Increase
+  url: oci://ghcr.io/testk8s-platform/runtime
+  ref:
+    tag: main
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: testk8s-metrics
+  namespace: flux-system
+spec:
+  interval: 1m # TODO: Increase
+  targetNamespace: default # TODO: Change
+  prune: true
+  sourceRef:
+    kind: OCIRepository
+    name: testk8s-runtime
+  path: ./metrics

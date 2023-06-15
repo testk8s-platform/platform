@@ -1,0 +1,30 @@
+on:
+  pull_request:
+
+name: Check
+jobs:
+  conform:
+    name: Conformance
+    runs-on: ubuntu-latest
+    container:
+      image: golang:1
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - name: Mark sources as safe for Git
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Fetch main branch for reference
+        run: git fetch origin main:main
+        if: github.ref_name != 'main'
+      - name: Install siderolabs/conform
+        run: go install github.com/siderolabs/conform/cmd/conform@latest
+      - name: Run siderolabs/conform
+        run: |
+          set +e
+          output=$(conform enforce 2>&1)
+          result=$?
+          printf '```\n%s\n```' "$output" | tee -a "$GITHUB_STEP_SUMMARY"
+          exit $result

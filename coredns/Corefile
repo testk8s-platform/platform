@@ -1,0 +1,6 @@
+.:53 {
+	# Proxy all traffic to the resolver of the container runtime,
+	# as it can resolve containers in addition to external names
+	forward . /etc/resolv.conf
+	log
+}

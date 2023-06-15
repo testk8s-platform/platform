@@ -1,0 +1,9 @@
+# Install Cilium CNI using the manifest provided by the boostrap container
+cluster:
+  network:
+    cni:
+      name: custom
+      urls:
+        - http://bootstrap/cilium.yaml
+  proxy:
+    disabled: true

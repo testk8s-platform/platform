@@ -1,0 +1,83 @@
+services:
+  cilium:
+    init: true
+    restart: unless-stopped
+    container_name: bootstrap
+    build:
+      context: bootstrap
+
+  coredns:
+    init: true
+    restart: unless-stopped
+    container_name: coredns
+    build:
+      context: ./coredns
+    networks:
+      platform-net:
+        ipv4_address: ${_COREDNS_IP}
+
+  docker:
+    init: true
+    restart: unless-stopped
+    container_name: docker
+    user: root
+    build:
+      context: docker
+      args:
+        _UID: ${_UID}
+    privileged: true
+    volumes:
+      - ${_TALOS_PATH}:/talos # TODO: Don't mount this when not building from source
+      - docker-cache:/var/lib/docker
+    working_dir: /talos
+    networks:
+      - platform-net
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/ready"]
+
+  modprobe:
+    init: true
+    container_name: modprobe
+    build:
+      context: ./modprobe
+    privileged: true
+    volumes:
+      - /lib/modules:/lib/modules
+    network_mode: none
+
+  talos:
+    init: true
+    restart: unless-stopped
+    container_name: talos
+    build:
+      context: ./talos
+    volumes:
+      - ${_TALOS_PATH}:/talos:Z # TODO: Don't mount this when not building from source
+      - ${_CONFIG_PATH}:/config:ro,Z # TODO: Don't mount this, configuration is sourced through Flux
+    working_dir: /talos
+    cap_add:
+      - SYS_ADMIN
+      - NET_ADMIN
+    devices:
+      - /dev/kvm
+      - /dev/net/tun
+    ports:
+      - 8000-8100:8000-8100
+    networks:
+      - platform-net
+    depends_on:
+      docker:
+        condition: service_healthy
+      modprobe:
+        condition: service_completed_successfully
+
+networks:
+  platform-net:
+    name: platform-net
+    ipam:
+      driver: default
+      config:
+        - subnet: ${_PLATFORM_NET_CIDR}
+
+volumes:
+  docker-cache:

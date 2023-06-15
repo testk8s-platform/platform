@@ -1,0 +1,44 @@
+policies:
+  - type: commit
+    spec:
+      header:
+        length: 89
+        imperative: true
+        case: lower
+        invalidLastCharacters: .
+      dco: true
+      gpg:
+        required: true
+        identity:
+          gitHubOrganization: testk8s-platform
+      spellcheck:
+        locale: US
+      maximumOfOneCommit: true
+      conventional:
+        types:
+          - build
+          - docs
+          - feat
+          - fix
+          - refactor
+          - release
+          - test
+        scopes:
+          - base
+          - meta
+          - metrics
+          - workflows
+  - type: license
+    spec:
+      skipPaths:
+        - .git/
+        - .github/
+        - out/
+      includeSuffixes:
+        - .yaml
+      excludeSuffixes:
+        - .conform.yaml
+        - .gen.yaml
+      allowPrecedingComments: true
+      header: |
+        # SPDX-License-Identifier: MPL-2.0
